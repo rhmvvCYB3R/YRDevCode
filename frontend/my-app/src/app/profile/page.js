@@ -1,5 +1,5 @@
 "use client";
-
+// Я думаю надо еще доработать!
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useState } from "react";
