@@ -11,7 +11,7 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center space-x-6 text-gray-700 text-xl">
-          <Link href="/search" className="hover:text-teal-500">
+          <Link href="/topics" className="hover:text-teal-500">
             <FaSearch />
           </Link>
           <Link href="/create" className="hover:text-teal-500">
