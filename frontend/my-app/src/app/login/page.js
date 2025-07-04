@@ -1,7 +1,12 @@
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import Link from "next/link";
 
 export default function LoginPage() {
   return (
+     <main className="min-h-screen bg-gradient-to-tr from-white via-blue-50 to-teal-50 text-gray-900">
+      <Navbar />
+
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-teal-100 flex items-center justify-center px-4">
       <div className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-center text-teal-700 mb-8">Вход</h1>
@@ -12,7 +17,7 @@ export default function LoginPage() {
             <input
               type="email"
               placeholder="example@gmail.com"
-              className="w-full px-5 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              className="w-full px-5 py-3 rounded-xl border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition text-gray-600"
               required
             />
           </div>
@@ -22,7 +27,7 @@ export default function LoginPage() {
             <input
               type="password"
               placeholder="Введите пароль"
-              className="w-full px-5 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              className="w-full px-5 py-3 rounded-xl border border-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition text-gray-600"
               required
             />
           </div>
@@ -43,5 +48,7 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+    <Footer />
+    </main>
   );
 }
