@@ -30,9 +30,8 @@ const topicsData = [
 
 export default function TopicsPage() {
   const [search, setSearch] = useState("");
-  const [topics, setTopics] = useState(topicsData);
+  const [topics] = useState(topicsData);
   const [showModal, setShowModal] = useState(false);
-  const [pendingTopicId, setPendingTopicId] = useState(null);
 
   const router = useRouter();
 
@@ -49,14 +48,14 @@ export default function TopicsPage() {
 
   function handleJoin(id) {
     if (!isAuthenticated()) {
-      setPendingTopicId(id); // можно сохранить id темы для дальнейшего перехода после логина
+      // Сохраняем ID темы для редиректа после логина
+      localStorage.setItem("pendingTopicId", id.toString());
       setShowModal(true);
       return;
     }
 
-    // Если авторизован, переходим в чат по id темы
-    alert(`Присоединение к теме с id=${id} (позже будет переход в комнату)`);
-    // router.push(`/chat/${id}`);
+    // Если авторизован — переход сразу
+    router.push(`/chat/${id}`);
   }
 
   function goToLogin() {
@@ -66,7 +65,7 @@ export default function TopicsPage() {
 
   function closeModal() {
     setShowModal(false);
-    setPendingTopicId(null);
+    localStorage.removeItem("pendingTopicId");
   }
 
   return (
