@@ -14,7 +14,7 @@ export default function Navbar() {
           <Link href="/topics" className="hover:text-teal-500">
             <FaSearch />
           </Link>
-          <Link href="/create" className="hover:text-teal-500">
+          <Link href="/add_topic" className="hover:text-teal-500">
             <FaPlus />
           </Link>
           <Link href="/profile" className="hover:text-teal-500">
