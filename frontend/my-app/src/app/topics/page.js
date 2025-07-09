@@ -2,59 +2,68 @@
 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const topicsData = [
-  {
-    id: 1,
-    title: "Frontend на React",
-    description: "Обсуждаем фреймворки, хуки и современные библиотеки UI",
-  },
-  {
-    id: 2,
-    title: "Backend с Spring Boot",
-    description: "Создание REST API и интеграция с базами данных",
-  },
-  {
-    id: 3,
-    title: "Кибербезопасность",
-    description: "Обмен опытом по защите приложений и анализу угроз",
-  },
-  {
-    id: 4,
-    title: "Flutter и мобильная разработка",
-    description: "Создание кроссплатформенных приложений и UI дизайн",
-  },
+  // ... твои темы
 ];
 
 export default function TopicsPage() {
   const [search, setSearch] = useState("");
   const [topics] = useState(topicsData);
   const [showModal, setShowModal] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const router = useRouter();
 
-  function isAuthenticated() {
-    // Тут должна быть реальная проверка, например проверка токена в localStorage
-    return false; // заглушка — не авторизован
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsAuthChecked(true);
+      return;
+    }
 
-  const filteredTopics = topics.filter(
-    (topic) =>
-      topic.title.toLowerCase().includes(search.toLowerCase()) ||
-      topic.description.toLowerCase().includes(search.toLowerCase())
-  );
+    // Проверяем валидность токена через API
+    fetch("http://localhost:8080/api/auth/profile", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Invalid token");
+        return res.json();
+      })
+      .then(() => {
+        setIsAuthenticated(true);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token"); // Удаляем невалидный токен
+      })
+      .finally(() => {
+        setIsAuthChecked(true);
+      });
+  }, []);
 
+  // Обработчик нажатия "Присоединиться"
   function handleJoin(id) {
-    if (!isAuthenticated()) {
+    if (!isAuthChecked) {
+      // Ещё не проверили, ждём
+      return;
+    }
+
+    if (!isAuthenticated) {
       // Сохраняем ID темы для редиректа после логина
       localStorage.setItem("pendingTopicId", id.toString());
       setShowModal(true);
       return;
     }
 
-    // Если авторизован — переход сразу
     router.push(`/chat/${id}`);
   }
 
@@ -67,6 +76,12 @@ export default function TopicsPage() {
     setShowModal(false);
     localStorage.removeItem("pendingTopicId");
   }
+
+  const filteredTopics = topics.filter(
+    (topic) =>
+      topic.title.toLowerCase().includes(search.toLowerCase()) ||
+      topic.description.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <main className="min-h-screen bg-gradient-to-tr from-white via-blue-50 to-teal-50 text-gray-900">
@@ -94,7 +109,10 @@ export default function TopicsPage() {
                 </div>
                 <button
                   onClick={() => handleJoin(id)}
-                  className="self-start sm:self-auto px-5 py-2 bg-teal-600 text-white rounded-xl font-semibold hover:bg-teal-700 transition text-sm sm:text-base"
+                  disabled={!isAuthChecked} // блокируем пока не проверили
+                  className={`self-start sm:self-auto px-5 py-2 rounded-xl font-semibold text-white transition text-sm sm:text-base ${
+                    isAuthChecked ? "bg-teal-600 hover:bg-teal-700" : "bg-gray-400 cursor-not-allowed"
+                  }`}
                 >
                   Присоединиться
                 </button>
