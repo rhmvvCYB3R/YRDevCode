@@ -2,11 +2,18 @@ package com.rhmvv.app.controller;
 
 import com.rhmvv.app.dto.AuthRequest;
 import com.rhmvv.app.dto.AuthResponse;
+import com.rhmvv.app.dto.UserProfileDto;
 import com.rhmvv.app.dto.UserRegistrationDto;
+import com.rhmvv.app.entity.User;
+import com.rhmvv.app.security.CustomUserDetails;
+import com.rhmvv.app.security.CustomUserDetailsService;
 import com.rhmvv.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,5 +58,26 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) {
         return userService.authenticate(request);
+    }
+    @Operation(
+            summary = "Get current user's profile",
+            description = "Returns the full profile of the authenticated user",
+            security = @SecurityRequirement(name = "bearerAuth"),
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "User profile retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = UserProfileDto.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "401",
+                            description = "User is not authenticated",
+                            content = @Content
+                    )
+            }
+    )
+    @GetMapping("/profile")
+    public UserProfileDto getProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return new UserProfileDto(userDetails.getUser());
     }
 }
