@@ -10,16 +10,73 @@ export default function ChatPage() {
     { id: 2, sender: "Вы", content: "Привет, я только подключился!", fromMe: true },
     { id: 3, sender: "Bob", content: "React — топ! Особенно хуки.", fromMe: false },
   ]);
-
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("token");
+    console.log("savedToken:", savedToken);
+    if (!savedToken) {
+      window.location.href = "/login";
+      return;
+    }
+    setToken(savedToken);
+    fetchMessages(savedToken);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  async function fetchMessages(token) {
+    try {
+      const response = await fetch("http://localhost:8080/api/chat/messages", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Ошибка загрузки сообщений: ${response.status}`);
+      }
+      const data = await response.json();
+      setMessages(data);
+    } catch (error) {
+      console.error(error);
+      alert("Ошибка при загрузке сообщений");
+    }
+  }
+
+  async function sendMessageToServer(messageContent) {
+    if (!token) {
+      console.warn("Нет токена, сообщение не отправлено");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/api/chat/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: messageContent }),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Ошибка отправки: ${response.status} ${errorText}`);
+      }
+      const savedMessage = await response.json();
+      setMessages((prev) => [...prev, { ...savedMessage, fromMe: true }]);
+    } catch (error) {
+      console.error(error);
+      alert(`Ошибка при отправке сообщения: ${error.message}`);
+    }
+  }
+
   const handleSend = () => {
     if (input.trim() === "") return;
+
     const newMessage = {
       id: Date.now(),
       sender: "Вы",
@@ -27,6 +84,9 @@ export default function ChatPage() {
       fromMe: true,
     };
     setMessages([...messages, newMessage]);
+
+    sendMessageToServer(input);
+
     setInput("");
   };
 

@@ -1,30 +1,64 @@
 "use client";
-// Я думаю надо еще доработать!
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { useState } from "react";
 
 export default function ProfilePage() {
-  // Заглушка с данными пользователя
-  const [user, setUser] = useState({
-    nickname: "rhmvv",
-    email: "rhmvv@example.com",
-    avatarUrl: "https://quasi-art.ru/data/images/works/it-cat.jpg",
-    bio: "Будущий кибербезопасник и бэкенд-разработчик",
-  });
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login"); // SPA редирект
+      return;
+    }
+
+    fetch("http://localhost:8080/api/user/profile", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Ошибка получения профиля");
+        }
+        const data = await res.json();
+        setUser(data);
+      })
+      .catch((err) => {
+        console.error(err);
+        router.push("/login"); // редирект при ошибке
+      })
+      .finally(() => setLoading(false));
+  }, [router]);
 
   function handleEdit() {
-    alert("Редактирование профиля (позже добавим форму и API)");
+    alert("Редактирование профиля (будет реализовано позже)");
   }
 
   function handleLogout() {
-    alert("Выход из аккаунта (реализация позже)");
+    localStorage.removeItem("token");
+    router.push("/login"); // SPA редирект
+  }
+
+  if (loading) {
+    return <div className="text-center mt-20">Загрузка...</div>;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-tr from-white via-blue-50 to-teal-50 text-gray-900">
       <Navbar />
-
       <section className="max-w-3xl mx-auto px-6 py-16">
         <div className="bg-white rounded-3xl shadow-lg p-10 flex flex-col items-center space-y-6">
           <img
@@ -52,7 +86,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </section>
-
       <Footer />
     </main>
   );
